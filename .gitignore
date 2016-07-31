@@ -1,0 +1,4 @@
+*.asm.swap
+*.c.swp
+*.o
+*.out
