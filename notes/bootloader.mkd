@@ -1,0 +1,85 @@
+Run boot sector as a floppy disk image using qemu:
+
+```
+nasm -f bin -o bootloader.bin bootloader.asm
+dd if=bootloader.bin of=bootloader.flp
+qemu-system-i386 -fda bootloader.flp
+```
+
+- intel and at&t assembly syntax
+- intel is the one we'll use. uses nasm as an assembler. use gas for at&t syntax (gnu assembler)
+- assembler takes in file written in assembly and outputs a flat-form binary file, meaning it doesn't have any logical organization within file, just has the hexadecimal representation
+- i use Hex Fiend on mac to view my object file (mostly to see that the last two bytes are 55 AA for the BIOS to identify a boot sector on a disk)
+- dd to 'convert and copy a file'. here it isn't doing anything but copying it, but you can set -of to an actual floppy disk drive filepath
+- `fda` to specify floppy disk image
+- qemu (Quick Emulator), emulates CPU through dynamic binary translation (emulate an instruction set by translating from one set to another)
+- also called an hypervisor, and also call this hardware virtualization
+- there's also hardware-assisted virtualization- processor supports virtualization (qemu)
+- paravirtualization- hypervisor (host kernel) provides API for guest kernel as if in different instruction set (xen)
+- os level virtualization- create isolated user spaces on host kernel (use normal system calls). cant host guest kernels (?? for docker, before used virtualbox, now?) (docker)
+- i386 refers to Intel's 80386, a 32 bit microprocessor. also called IA-32, x86
+- x86-64 is AMD's 64 bit microprocessor, also called AMD64. instruction set is vendor neutral though.
+- microprocessor- incorporate functions of a CPU onto a single integrated circuit
+- when computer is turned on, first boot into BIOS (firmware), then does a POST (power on self test), then selects disk drive to boot
+- first 512 bytes of disk image (boot sector) checked. looks for 0x55 0xAA as last two bytes (might not need this anymore)
+- then BIOS will copy the boot sector to the physical memory address 0x7C00 and jumps to that address
+- BIOS is still in real mode
+- ready made boot sector - GRUB
+- x86 is a little endian machine- means that orders from least significant byte to most significant on a word basis
+- 0xaa55 -> 0x55aa
+- 0xaa55 0xdd12 -> 0x55aa 0x12dd
+- hexadecimal can represent from 0 to 16 (0-9a-f). each hexadecimal represents 4 bits since it represents 2^4 = 16 possibilities of those 4 bits
+- so two of them to form a byte, two bytes to form a word (seen above)
+- 2^10 bytes = 1024 bytes = 1KB
+- 2^10 * 2^10 = 2^20 bytes = 1MB
+- 2^30 bytes = 1GB
+- two different types of memory addressing: byte addressing and segmented addressing
+- byte addressing- memory organized as a sequence of bytes. 1one address per byte.
+- memory space: a range of addresses
+- segmented addressing- can have many independent address spaces, or segments. can separate for code, stack, etc
+- general execution environment provider by hardware: memory (address space), general purpose data registers, segment registers, flag register, instruction pointer register
+- different modes: real, protected
+- real mode- program can access all memory space without hardware protected mechanism
+- protected mode- can still access real mode (called virtual-8086 mode, or "unreal" mode). provides virtual memory, read-only, protection to different address spaces
+- different memory models: flat, segmented, real
+- flat is just each byte has an address and you can address them linearly 0 to 2^32 - 1 for 4GB
+- segmented memory model- called a logical address, have a segment and an offset
+- have 2^32 (4GB) linear address space, and 2^36 (64GB) physical address space
+- real- a specific type of segmented where the segment is 16 bits but shifted 4 bits over, then you add the offset to it for a possible 20 bit address
+- max size of 20 bits used to note the address space- can represent 2^20 (1MB) of different addresses (each address is separated at the byte level)
+- this is from Intel 8086. when you added one to the maximum address space, it would wrap around. developers used that trick
+- later when the number of address bits increased, it wouldn't force the A20 line to zero in real mode anymore. so they added a logic gate between processor and system bus (?)
+- you can disable or enable the gate which controls whether or not the address bus can receive a signal from A20. it's disabled in real mode so the signal is not received, and wraps back to 0
+- you have to enable this when you enter into 32bit or 64 bit protected mode, which uses a different memory model
+- `bootloader.asm` will end up in first sector of our floppy disk image
+- it's then copied to 0x7C00 in our physical memory by the bios and jumped to that address
+- we set up our stack to start at 0x7C00 because the stack pointer grows downwards (decreases to zero) whenever you push to it.
+- normally there's important stuff in the 0 to 0x7C00 range, but at this point we dont have anything there yet
+- then we set another stack segment register to 0xb800. because of the way real addresses work, the linear address is actually 0xb8000 (extra zero at the end to push it to the left 4 bits)
+- 0xb8000 is where the video memory lies. you can set two bytes at a time, the character and the graphical representation of it
+- then we just loop infinitely so that the bootloader doesn't crash
+- the rest is filling the boot sector with all zeros except for the last two bits, which are set to 0xaa55
+
+- next steps:
+- need to fill the boot sector with actual stuff, not just saying hello world
+- boot sector needs to first have a jump instruction to skip over the data that comes after that
+- should have partition information (need to check out FAT16 spec)
+- need to load file system via BIOS interrupt
+- need to file my file via the root directory
+- find the blocks that have my file, piece them together, load them into memory
+- set protected mode, enabled A20 gate
+- jump to file in memory
+
+```ruby
+# hexadecimal to decimal
+Integer("0x007E00")
+
+# decimal to hexadecimal
+512.to_s(16)
+```
+
+
+Pending:
+- interrupts, events from hardware
+- other kernel jobs: files, processes, sockets, directories, scheduler
+- kernel basics: print strings, integer, output to serial port, working interrupt/exception handling system, memory map (virtual/physical), heap

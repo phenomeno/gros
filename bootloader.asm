@@ -1,10 +1,10 @@
-[org 0x7c00]
-[bits 16]
+[org 0x7c00]                ; set location counter. also when you have assembler and linker in one step, tells linker where in physical memory to place to put code that follows (offset in segment)
+[bits 16]                   ; we'll be in real mode which uses 16bit instructions. lets assembler know it needs to assemble instructions into 16 bit instructions.
 
 ; stack initialize
 mov ax, 0x0
-mov ss, ax
-mov sp, 0x7c00              ; stack grows downward
+mov ss, ax ; cant assign a constant to ustack segment
+mov sp, 0x7c00              ; stack pointer decreases (approaches 0)
 
 ; video memory
 mov ax, 0xb800
@@ -37,5 +37,5 @@ mov byte [es:0x15], 0x08
 loop:
     jmp loop
 
-times   510 - ($-$$) db 0
+times   510 - ($-$$) db 0   ; $ current value of location counter
 dw      0xaa55              ; necessary for BIOS to know this is bootable

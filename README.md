@@ -39,10 +39,22 @@ The system BIOS will load the bootloader program from an external source of memo
 
 Execution Instructions:
 ```
-nasm bootloader.asm
-qemu-system-i386 -fda bootloader
+nasm -f bin -o bootloader.bin bootloader.asm
+dd if=bootloader.bin of=bootloader.flp
+qemu-system-i386 -fda bootloader.flp
 ```
 
 Resources:
 - [Explanation of `0000:7c00`](http://stackoverflow.com/a/9340935)
 - [Explanation of memory addressing on stackoverflow](http://superuser.com/questions/593847/how-many-memory-addresses-can-we-get-with-a-32-bit-processor-and-1gb-ram)
+- https://www.geek.com/chips/difference-between-real-mode-and-protected-mode-574665/
+- https://en.wikipedia.org/wiki/Endianness
+- http://download.qemu.org/qemu-doc.html
+
+Pending:
+- https://www.reinterpretcast.com/creating-a-bare-bones-bootloader
+- https://sreeramz.wordpress.com/2012/11/21/hello-world-boot-loader/
+- http://mikeos.sourceforge.net/write-your-own-os.html
+- https://en.wikipedia.org/wiki/Hexadecimal
+- https://samypesse.gitbooks.io/how-to-create-an-operating-system/content/
+- https://news.ycombinator.com/item?id=13641949
