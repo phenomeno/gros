@@ -1,0 +1,17 @@
+total sectors 4096 = 2^12
+total bytes = 4096 * 512 (2^9) = 2^21
+fat size in sectors = 3
+root dir size in sectors = (512 (root entry count) * 32 + 512 (bytes per sector) - 1) / 512 bytes per sector = 32.99 (33)
+first_data_sector = 1 (reserved sector count) + (2 table count * 3 fat size) + 32.99 root_dir_sectors = 39.99 (40)
+first_fat_sector = 1 reserved_sector_count
+total_no_data_sectors = 4096 total_sectors - (1 reserved sector count + (2 table count * 3 fat size) + 39.99 root_dir_sectors) = 4049.01
+total_no_clusters = 4049.01 total_no_data_sectors / 4 sectors_per_cluster = 1012.25 clusters
+first_root_dir_sector = 39.99 first_data_sector - 32.99 root_dir_sectors = 7
+first_sector_of_cluster = ((cluster_num - 2) * 4 sectors_per_cluster) + 39.99 first_data_sector. for example, cluster_num at 10 = 71.99, cluster_num at 0 = 32, cluster_num at 9 = 68
+
+# utf-8 for long name
+
+
+(32 + 7) * 512 = 19968
+
+9 -> 67

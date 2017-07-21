@@ -19,7 +19,7 @@ flags = get_hex_to_i(37, 1)
 signature = get_hex_to_i(38, 1)
 serial_no = get_hex_to_i(39, 4)
 volume_label_str = get_hex_to_i(54, 8)
-bootcode = get_hex_to_i(62, 448)
+bootcode = get_hex_to_i(62, 448) # find location of kernel, load to memory, transfer execution to that file
 bootable_partition_signature = get_hex_to_i(510, 2)
 fat_start = 512
 root_start = no_bytes_in_sector * (no_reserved_sectors + no_sectors_per_fat * no_fat + no_hidden_sectors) # 7 * 512
@@ -104,6 +104,8 @@ def get_file_entry(start)
     last_modified_date: last_modified_date,
     attribute_message: attribute_message,
     attribute_code: attribute_code,
+    cluster_low_16_bits: cluster_low_16_bits,
+    file_size: file_size,
     children: children
   }
 end
